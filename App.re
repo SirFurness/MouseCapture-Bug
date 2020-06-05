@@ -2,97 +2,75 @@ open Revery;
 open Revery.UI;
 open Revery.UI.Components;
 
-module AnimatedText = {
-  module Styles = {
-    open Style;
+type reducerState = {state: string};
 
-    let text = (~yOffset) => [
-      color(Colors.white),
-      fontFamily("Roboto-Regular.ttf"),
-      fontSize(24.),
-      transform([Transform.TranslateY(yOffset)]),
-    ];
+type action =
+  | Enter
+  | Leave;
+
+let reducer = (action, state) =>
+  switch (action) {
+  | Enter => {state: "entered"}
+  | Leave => {state: "left"}
   };
 
-  let%component make = (~delay: Time.t, ~text: string, ()) => {
-    let%hook (yOffset, _state, _reset) =
-      Hooks.animation(
-        Animation.animate(Time.ms(500))
-        |> Animation.delay(delay)
-        |> Animation.ease(Easing.easeOut)
-        |> Animation.tween(50., 0.),
-      );
+let%component reducerVersion = () => {
+  let%hook (aHook, dispatch) =
+    Hooks.reducer(~initialState={state: "default"}, reducer);
 
-    let%hook (animatedOpacity, _state, _reset) =
-      Hooks.animation(
-        Animation.animate(Time.seconds(1))
-        |> Animation.delay(delay)
-        |> Animation.ease(Easing.easeOut)
-        |> Animation.tween(0., 1.),
-      );
+  let%hook (captureMouse, captureState) =
+    Hooks.mouseCapture(
+      ~onMouseUp=
+        (_state, _evt) => {
+          print_endline(aHook.state);
+          None;
+        },
+      (),
+    );
 
-    <Opacity opacity=animatedOpacity>
-      <Padding padding=8>
-        <Text style={Styles.text(~yOffset)} text />
-      </Padding>
-    </Opacity>;
-  };
+  let onMouseDown = _evt => captureMouse();
+
+  let onMouseEnter = _evt => dispatch(Enter);
+  let onMouseLeave = _evt => dispatch(Leave);
+
+  <View onMouseDown onMouseEnter onMouseLeave>
+    <Text
+      style=Style.[fontFamily("Roboto-Regular.ttf"), fontSize(20.)]
+      text="reducer version!"
+    />
+  </View>;
 };
 
-module SimpleButton = {
-  module Styles = {
-    open Style;
+let%component stateVersion = () => {
+  let%hook (aHook, setAHook) = Hooks.state("default");
 
-    let button = [
-      backgroundColor(Color.rgba(1., 1., 1., 0.1)),
-      border(~width=2, ~color=Colors.white),
-      margin(16),
-    ];
+  let%hook (captureMouse, captureState) =
+    Hooks.mouseCapture(
+      ~onMouseUp=
+        (_state, _evt) => {
+          print_endline(aHook);
+          None;
+        },
+      (),
+    );
 
-    let text = [
-      color(Colors.white),
-      fontFamily("Roboto-Regular.ttf"),
-      fontSize(20.),
-    ];
-  };
+  let onMouseDown = _evt => captureMouse();
 
-  let%component make = () => {
-    let%hook (count, setCount) = React.Hooks.state(0);
-    let increment = () => setCount(count => count + 1);
+  let onMouseEnter = _evt => setAHook(_ => "entered");
+  let onMouseLeave = _evt => setAHook(_ => "left");
 
-    let text = "Click me: " ++ string_of_int(count);
-    <Clickable onClick=increment>
-      <View style=Styles.button>
-        <Padding padding=4> <Text style=Styles.text text /> </Padding>
-      </View>
-    </Clickable>;
-  };
+  <View onMouseDown onMouseEnter onMouseLeave>
+    <Text
+      style=Style.[fontFamily("Roboto-Regular.ttf"), fontSize(20.)]
+      text="state version!"
+    />
+  </View>;
 };
 
 let main = () => {
-  module Styles = {
-    open Style;
-
-    let container = [
-      position(`Absolute),
-      justifyContent(`Center),
-      alignItems(`Center),
-      bottom(0),
-      top(0),
-      left(0),
-      right(0),
-    ];
-
-    let inner = [flexDirection(`Row), alignItems(`FlexEnd)];
-  };
-
-  <View style=Styles.container>
-    <View style=Styles.inner>
-      <AnimatedText delay={Time.ms(0)} text="Welcome" />
-      <AnimatedText delay={Time.ms(500)} text="to" />
-      <AnimatedText delay={Time.ms(1000)} text="Revery" />
-    </View>
-    <SimpleButton />
+  <View style=Style.[flexDirection(`Column)]>
+    <stateVersion />
+    <reducerVersion />
   </View>;
 };
 
