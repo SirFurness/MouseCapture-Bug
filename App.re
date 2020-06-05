@@ -67,44 +67,10 @@ let%component stateVersion = () => {
   </View>;
 };
 
-let%component recaptureVersion = () => {
-  let%hook (aHook, setAHook) = Hooks.state("default");
-
-  let%hook (captureMouse, captureState) =
-    Hooks.mouseCapture(
-      ~onMouseUp=
-        (_state, _evt) => {
-          print_endline(aHook);
-          None;
-        },
-      (),
-    );
-
-  let onMouseDown = _evt => captureMouse();
-
-  let onMouseEnter = _evt => {
-    setAHook(_ => "entered");
-  };
-  let onMouseLeave = _evt => {
-    setAHook(_ => "left");
-  };
-  let onMouseMove = _evt => {
-    captureMouse();
-  };
-
-  <View onMouseMove onMouseDown onMouseEnter onMouseLeave>
-    <Text
-      style=Style.[fontFamily("Roboto-Regular.ttf"), fontSize(20.)]
-      text="recapture mouse version!"
-    />
-  </View>;
-};
-
 let main = () => {
   <View style=Style.[flexDirection(`Column)]>
     <stateVersion />
     <reducerVersion />
-    <recaptureVersion />
   </View>;
 };
 
