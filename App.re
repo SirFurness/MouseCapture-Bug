@@ -34,10 +34,7 @@ let%component reducerVersion = () => {
   let onMouseLeave = _evt => dispatch(Leave);
 
   <View onMouseDown onMouseEnter onMouseLeave>
-    <Text
-      style=Style.[fontFamily("Roboto-Regular.ttf"), fontSize(20.)]
-      text="reducer version!"
-    />
+    <Text text="reducer version!" />
   </View>;
 };
 
@@ -60,10 +57,7 @@ let%component stateVersion = () => {
   let onMouseLeave = _evt => setAHook(_ => "left");
 
   <View onMouseDown onMouseEnter onMouseLeave>
-    <Text
-      style=Style.[fontFamily("Roboto-Regular.ttf"), fontSize(20.)]
-      text="state version!"
-    />
+    <Text text="state version!" />
   </View>;
 };
 
